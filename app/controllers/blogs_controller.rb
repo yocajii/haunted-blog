@@ -3,14 +3,15 @@
 class BlogsController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index show]
 
-  before_action :set_blog, only: %i[show]
+  before_action :set_blog, only: %i[edit update destroy]
 
   def index
     @blogs = Blog.search(params[:term]).published.default_order
   end
 
   def show
-    @blog = Blog.published.find(params[:id]) unless @blog.owned_by?(current_user)
+    @blog = Blog.find(params[:id])
+    Blog.published.find(params[:id]) unless @blog.owned_by?(current_user)
   end
 
   def new
@@ -18,7 +19,6 @@ class BlogsController < ApplicationController
   end
 
   def edit
-    @blog = current_user.blogs.find(params[:id])
   end
 
   def create
@@ -32,7 +32,6 @@ class BlogsController < ApplicationController
   end
 
   def update
-    @blog = current_user.blogs.find(params[:id])
     if @blog.update(blog_params)
       redirect_to blog_url(@blog), notice: 'Blog was successfully updated.'
     else
@@ -41,7 +40,6 @@ class BlogsController < ApplicationController
   end
 
   def destroy
-    @blog = current_user.blogs.find(params[:id])
     @blog.destroy!
 
     redirect_to blogs_url, notice: 'Blog was successfully destroyed.', status: :see_other
@@ -50,7 +48,7 @@ class BlogsController < ApplicationController
   private
 
   def set_blog
-    @blog = Blog.find(params[:id])
+    @blog = current_user.blogs.find(params[:id])
   end
 
   def blog_params
