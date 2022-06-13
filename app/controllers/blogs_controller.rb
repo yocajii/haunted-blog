@@ -9,7 +9,9 @@ class BlogsController < ApplicationController
     @blogs = Blog.search(params[:term]).published.default_order
   end
 
-  def show; end
+  def show
+    @blog = Blog.published.find(params[:id]) unless @blog.owned_by?(current_user)
+  end
 
   def new
     @blog = Blog.new
